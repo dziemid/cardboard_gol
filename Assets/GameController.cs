@@ -14,7 +14,11 @@ public class GameController : MonoBehaviour {
 
 	private int boardSize = 50;
 
+	private GameOfLife gol;
+
 	void Start () {
+		gol = new GameOfLife (50);
+
 		board = createBoard ();
 
 		addSquare (0, 0);
@@ -126,62 +130,20 @@ public class GameController : MonoBehaviour {
 
 	void updateBoard() {
 		GameObject[][] newBoard = createBoard ();
+
+		gol.nextGeneration ();
+
 		for (int i=0; i < boardSize; i++) {
 			for (int j=0; j < boardSize; j++) {
-				int neighboursCount = aliveNeighbours(board, i, j);
-
-				if (board[i][j] && (neighboursCount == 2 || neighboursCount == 3)) {
+				if (gol.board[i][j]) {
 					addCell(newBoard, i, j);
-				}
-
-				else if (board[i][j] == null && neighboursCount == 3) {
-					addCell(newBoard, i, j);
-				}
-				else if (board[i][j])  {
+				} else if ((board[i][j]) && !gol.board[i][j]) {
 					Instantiate (explosion, board[i][j].transform.position, board[i][j].transform.rotation);
 				}
-
 			}
 		}
 
 		replaceBoard (newBoard);
-	}
-
-	int aliveNeighbours(GameObject[][] board, int x, int y) {
-		int neighboursCount = 0;
-
-		if (y - 1 >= 0) {
-			if (x - 1 >= 0 && board [x - 1] [y - 1]) {
-				neighboursCount++;
-			}
-			if (board [x] [y - 1]) {
-				neighboursCount++;
-			}
-			if (x + 1 < boardSize && board [x + 1] [y - 1]) {
-				neighboursCount++;
-			}
-		}
-
-		if (x - 1 >= 0 && board[x-1][y]) {
-			neighboursCount++;
-		}
-		if (x + 1 < boardSize && board[x+1][y]) {
-			neighboursCount++;
-		}
-
-		if (y + 1 < boardSize) {
-			if (x - 1 >= 0 && board [x - 1] [y + 1]) {
-				neighboursCount++;
-			}
-			if (board [x] [y + 1]) {
-				neighboursCount++;
-			}
-			if (x + 1 < boardSize && board [x + 1] [y + 1]) {
-				neighboursCount++;
-			}
-		}
-
-		return neighboursCount;
 	}
 
 	void replaceBoard(GameObject[][] newBoard) {
@@ -202,5 +164,6 @@ public class GameController : MonoBehaviour {
 		newcell.transform.position = new Vector3(x, 1, z);
 
 		aBoard [x] [z] = newcell;
+		gol.addCell (x, z);
 	}
 }
